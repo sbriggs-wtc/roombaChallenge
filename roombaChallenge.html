@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Roomba Challenge</title>
+</head>
+<style>
+	table,
+	td {
+		border: 1px solid black;
+		border-collapse: collapse;
+	}
+
+	td {
+		width: 50px;
+		height: 50px;
+		text-align: center;
+	}
+
+	.grey {
+		background-color: grey;
+	}
+
+	.yellow {
+		background-color: antiquewhite;
+	}
+</style>
+
+<body>
+	<table id="floor">
+		<tr>
+			<td id="xy07"></td>
+			<td id="xy17"></td>
+			<td id="xy27"></td>
+			<td id="xy37"></td>
+			<td id="xy47"></td>
+			<td id="xy57"></td>
+			<td id="xy67"></td>
+			<td id="xy77"></td>
+		</tr>
+		<tr>
+			<td id="xy06"></td>
+			<td id="xy16"></td>
+			<td id="xy26"></td>
+			<td id="xy36"></td>
+			<td id="xy46"></td>
+			<td id="xy56"></td>
+			<td id="xy66"></td>
+			<td id="xy76"></td>
+		</tr>
+		<tr>
+			<td id="xy05"></td>
+			<td id="xy15"></td>
+			<td id="xy25"></td>
+			<td id="xy35"></td>
+			<td id="xy45"></td>
+			<td id="xy55"></td>
+			<td id="xy65"></td>
+			<td id="xy75"></td>
+		</tr>
+		<tr>
+			<td id="xy04"></td>
+			<td id="xy14"></td>
+			<td id="xy24"></td>
+			<td id="xy34"></td>
+			<td id="xy44"></td>
+			<td id="xy54"></td>
+			<td id="xy64"></td>
+			<td id="xy74"></td>
+		</tr>
+		<tr>
+			<td id="xy03"></td>
+			<td id="xy13"></td>
+			<td id="xy23"></td>
+			<td id="xy33"></td>
+			<td id="xy43"></td>
+			<td id="xy53"></td>
+			<td id="xy63"></td>
+			<td id="xy73"></td>
+		</tr>
+		<tr>
+			<td id="xy02"></td>
+			<td id="xy12"></td>
+			<td id="xy22"></td>
+			<td id="xy32"></td>
+			<td id="xy42"></td>
+			<td id="xy52"></td>
+			<td id="xy62"></td>
+			<td id="xy72"></td>
+		</tr>
+		<tr>
+			<td id="xy01"></td>
+			<td id="xy11"></td>
+			<td id="xy21"></td>
+			<td id="xy31"></td>
+			<td id="xy41"></td>
+			<td id="xy51"></td>
+			<td id="xy61"></td>
+			<td id="xy71"></td>
+		</tr>
+		<tr>
+			<td id="xy00"></td>
+			<td id="xy10"></td>
+			<td id="xy20"></td>
+			<td id="xy30"></td>
+			<td id="xy40"></td>
+			<td id="xy50"></td>
+			<td id="xy60"></td>
+			<td id="xy70"></td>
+		</tr>
+	</table>
+	<button id="walkbutton" onclick="walk()">Walk</button>
+	<button onclick="stop()">Stop</button>
+	<button onclick="location.reload()">Reload</button>
+	<span>| Battery: </span><span id="battery"></span>
+	<span>| Points: </span><span id="points"></span>
+</body>
+<script>
+	let xPos = 0;
+	let yPos = 0;
+	let batteryPower = 1000;
+	let points = 0;
+	let stopBreak = 0;
+	document.getElementById("battery").innerHTML = batteryPower;
+	document.getElementById("points").innerHTML = points;
+	generateMap();
+
+	function delay() {
+		console.log('Delaying');
+		return new Promise(resolve => {
+			setTimeout(() => {
+				resolve('Delayed for 500milliseconds');
+			}, 2000)
+		});
+	}
+
+	function stop() {
+		stopBreak = 1;
+	}
+
+	function walk() {
+		document.getElementById("walkbutton").setAttribute("disabled", "true")
+		var i = 0;
+		function myLoop() {
+			setTimeout(function () {
+				move(dSteps[i].x, dSteps[i].y);
+				let td = document.getElementById(`xy${xPos}${yPos}`);
+				if (td.className.includes("grey")) {
+					points += 250;
+				}
+				points -= 10;
+				document.getElementById("points").innerHTML = points;
+				document.getElementById("battery").innerHTML = --batteryPower;
+				i++;
+				if (i < dSteps.length && stopBreak == 0) {
+					myLoop();
+				}
+			}, 100)
+		}
+		myLoop();
+		document.getElementById("walkbutton").setAttribute("disabled", "false")
+	}
+
+	function clearMap() {
+		let i = 0;
+		while (i < 8) {
+			let j = 0;
+			while (j < 8) {
+				document.getElementById(`xy${i}${j}`).classList.remove("grey");
+				j++;
+			}
+			i++
+		}
+
+	}
+
+	async function generateMap() {
+		clearMap();
+		setR(0, 0);
+		let i = 0;
+		while (i < 18) {
+			let td = document.getElementById(`xy${Math.floor((Math.random() * 8))}${Math.floor((Math.random() * 8))}`);
+			if (!td.className.includes("grey") && td.id != "xy00") {
+				td.classList.add("grey");
+				i++;
+			}
+		}
+	}
+
+	function setR(x, y) {
+		document.getElementById(`xy${xPos.toString()}${yPos.toString()}`).innerHTML = '';
+		document.getElementById(`xy${x.toString()}${y.toString()}`).innerHTML = 'R';
+		document.getElementById(`xy${x.toString()}${y.toString()}`).classList.add('yellow');
+		xPos = x;
+		yPos = y;
+	}
+
+	function move(dx, dy) {
+		setR(xPos + dx, yPos + dy);
+	}
+
+	/* 	function moveRight() {
+			if (xPos < 7) {
+				setR(xPos + 1, yPos)
+			}
+		}
+	
+		function moveLeft() {
+			if (xPos > 0) {
+				setR(xPos - 1, yPos)
+			}
+		}
+	
+		function moveUp() {
+			if (yPos < 7) {
+				setR(xPos, yPos + 1)
+			}
+		}
+	
+		function moveDown() {
+			if (yPos > 0) {
+				setR(xPos, yPos - 1)
+			}
+		} */
+
+	let dSteps = [
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+
+		{ x: 0, y: -1 },
+
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+
+		{ x: 0, y: -1 },
+		{ x: 0, y: -1 },
+		{ x: 0, y: -1 },
+		{ x: 0, y: -1 },
+		{ x: 0, y: -1 },
+
+		{ x: -1, y: 0 },
+
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+
+		{ x: 0, y: -1 },
+
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+
+		{ x: 0, y: -1 },
+		{ x: 0, y: -1 },
+		{ x: 0, y: -1 },
+
+		{ x: -1, y: 0 },
+
+		{ x: 0, y: 1 },
+		{ x: 0, y: 1 },
+
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+
+		{ x: 0, y: -1 },
+
+		{ x: 1, y: 0 },
+		{ x: 1, y: 0 },
+
+		{ x: 0, y: -1 },
+
+		{ x: -1, y: 0 },
+		{ x: -1, y: 0 },
+
+		{ x: 0, y: -1 },
+	]
+</script>
+
+</html>
